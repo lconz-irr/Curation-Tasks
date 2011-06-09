@@ -1,0 +1,27 @@
+Add the task to ${dspace-dir}/config/modules/curate.cfg
+=======================================================
+
+Add the task to list of known curation tasks:
+
+plugin.named.org.dspace.curate.CurationTask = \
+    org.dspace.curate.ProfileFormats = profileformats, \
+    org.dspace.curate.RequiredMetadata = requiredmetadata, \
+    org.dspace.curate.ClamScan = vscan, \
+    nz.ac.lconz.irr.curate.AddCoverPage = addcover
+
+
+Add the task to list of tasks that can be run from XMLUI
+
+ui.tasknames = \
+     profileformats = Profile Bitstream Formats, \
+     requiredmetadata = Check for Required Metadata, \
+     addcover = Add Cover Page to PDF Files
+
+
+Create a file called addcover.cfg in ${dspace-dir}/config/modules/
+==================================================================
+
+# addcover filename of cover page
+cover.filename = ${dspace-dir}/config/modules/coverpage.pdf
+# bundle into which the original version is moved
+moveto.bundle = PRESERVATION
