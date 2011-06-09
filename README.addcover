@@ -1,7 +1,6 @@
-Add the task to ${dspace-dir}/config/modules/curate.cfg
-=======================================================
+h1. Add the task to ${dspace-dir}/config/modules/curate.cfg
 
-Add the task to list of known curation tasks:
+h2. Add the task to list of known curation tasks:
 
 plugin.named.org.dspace.curate.CurationTask = \
     org.dspace.curate.ProfileFormats = profileformats, \
@@ -10,7 +9,7 @@ plugin.named.org.dspace.curate.CurationTask = \
     nz.ac.lconz.irr.curate.AddCoverPage = addcover
 
 
-Add the task to list of tasks that can be run from XMLUI
+h2. Add the task to list of tasks that can be run from XMLUI
 
 ui.tasknames = \
      profileformats = Profile Bitstream Formats, \
@@ -18,8 +17,7 @@ ui.tasknames = \
      addcover = Add Cover Page to PDF Files
 
 
-Create a file called addcover.cfg in ${dspace-dir}/config/modules/
-==================================================================
+h1. Create a file called addcover.cfg in ${dspace-dir}/config/modules/
 
 # addcover filename of cover page
 cover.filename = ${dspace-dir}/config/modules/coverpage.pdf
