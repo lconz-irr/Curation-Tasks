@@ -16,6 +16,7 @@ import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Mutative;
 
 import com.itextpdf.text.pdf.PdfReader;
 
@@ -24,6 +25,7 @@ import com.itextpdf.text.pdf.PdfReader;
  * @author Andrea Schweer <schweer@waikato.ac.nz>
  *
  */
+@Mutative
 public class ExtractPdfMetadata extends AbstractCurationTask {
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");

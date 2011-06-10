@@ -18,6 +18,7 @@ import org.dspace.content.Item;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Mutative;
 import org.dspace.handle.HandleManager;
 
 import com.itextpdf.text.DocumentException;
@@ -31,6 +32,7 @@ import com.itextpdf.text.pdf.PdfStamper;
  * @author Andrea Schweer <schweer@waikato.ac.nz>
  *
  */
+@Mutative
 public class AddCoverPage extends AbstractCurationTask {
 
 	private static final String PLUGIN_PREFIX = "addcover";
