@@ -7,6 +7,11 @@ import org.dspace.curate.Curator;
 import org.dspace.event.Consumer;
 import org.dspace.event.Event;
 
+/**
+ * Event consumer that schedules curation task when an item is installed into the archive.
+ * @author Andrea Schweer <schweer@waikato.ac.nz>
+ *
+ */
 public class CurateOnInstallation implements Consumer {
 
 	@Override

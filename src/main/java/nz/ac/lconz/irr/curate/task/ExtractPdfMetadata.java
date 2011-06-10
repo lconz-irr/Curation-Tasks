@@ -19,6 +19,11 @@ import org.dspace.curate.Curator;
 
 import com.itextpdf.text.pdf.PdfReader;
 
+/**
+ * Curation task that populates item metadata from PDF metadata.
+ * @author Andrea Schweer <schweer@waikato.ac.nz>
+ *
+ */
 public class ExtractPdfMetadata extends AbstractCurationTask {
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
