@@ -4,10 +4,7 @@ import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.authorize.ResourcePolicy;
-import org.dspace.content.Bitstream;
-import org.dspace.content.Bundle;
-import org.dspace.content.DSpaceObject;
-import org.dspace.content.Item;
+import org.dspace.content.*;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
@@ -33,6 +30,26 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	private int numSkippedItems;
 	private int numOkEmbargoedItems;
 	private int numFixedEmbargoedItems;
+	private boolean distinguishTypes = false;
+	private String typeSchema;
+	private String typeElement;
+	private String typeQualifier;
+
+	@Override
+	public void init(Curator curator, String taskId) throws IOException {
+		super.init(curator, taskId);
+		String typeField = ConfigurationManager.getProperty("embargo.field.type");
+
+		if (typeField != null && !typeField.equals("")) {
+			String[] fieldComponents = typeField.split("\\.");
+			typeSchema = fieldComponents[0];
+			typeElement = fieldComponents[1];
+			if (fieldComponents.length > 2) {
+				typeQualifier = fieldComponents[2];
+			}
+			distinguishTypes = true;
+		}
+	}
 
 	/**
 	 * Repair embargo permissions of an item.
@@ -108,8 +125,16 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	}
 
 	private void fixPermissions(Context context, Item item) throws SQLException, AuthorizeException {
-        // remove read access from the item
-        AuthorizeManager.removePoliciesActionFilter(context, item, Constants.READ);
+        Group authorisedGroup = findCanReadEmbargoedItemsGroup(context);
+
+		if (!distinguishTypes || hasFullEmbargo(item)) {
+            // remove read access from the item
+            AuthorizeManager.removePoliciesActionFilter(context, item, Constants.READ);
+			// except for authorised group, if applicable
+			if (authorisedGroup != null) {
+                AuthorizeManager.addPolicy(context, item, Constants.READ, authorisedGroup);
+			}
+		}
         // and from all bundles and their bitstreams
         for (Bundle bundle : item.getBundles()) {
             AuthorizeManager.removePoliciesActionFilter(context, bundle, Constants.READ);
@@ -118,10 +143,8 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
             }
         }
 
-        // allow authorised group read access to everything though
-        Group authorisedGroup = findCanReadEmbargoedItemsGroup(context);
+        // allow authorised group read access to bundles/bitstreams though
         if (authorisedGroup != null) {
-            AuthorizeManager.addPolicy(context, item, Constants.READ, authorisedGroup);
             for (Bundle bundle : item.getBundles()) {
                 AuthorizeManager.addPolicy(context, bundle, Constants.READ, authorisedGroup);
                 for (Bitstream bitstream : bundle.getBitstreams()) {
@@ -131,50 +154,69 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
         }
 	}
 
+	private boolean hasFullEmbargo(Item item) {
+		DCValue[] typeValue = item.getMetadata(typeSchema, typeElement, typeQualifier, Item.ANY);
+		if (typeValue == null || typeValue.length < 1) {
+			// type not specified -- assume full embargo
+			return true;
+		}
+
+		String type = typeValue[0].value;
+		// unless it's explicitly set to partial, assume full embargo
+		return !type.equals("Partial");
+	}
+
 	private boolean checkPermissions(Context context, Item item) throws SQLException {
         Group authorisedToRead = findCanReadEmbargoedItemsGroup(context);
         boolean policiesOk = true;
 
-        // check for ANY read policies and report them (unless they are in the authorised group):
-        for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, item, Constants.READ)) {
-            // don't warn for authorised users
-            if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
-                continue;
-            }
-            // do warn for everyone else
-            policiesOk = false;
-            report("CHECK WARNING: Item " + item.getHandle() + " allows READ by "
-		                   + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
-				                      : "EPerson " + rp.getEPerson().getFullName()));
-        }
+		if (!distinguishTypes || hasFullEmbargo(item)) {
+			// check for ANY read policies and report them (unless they are in the authorised group):
+			for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, item, Constants.READ)) {
+				// don't warn for authorised users
+				if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
+					continue;
+				}
+				// do warn for everyone else
+				policiesOk = false;
+				report("CHECK WARNING: Item " + item.getHandle() + " allows READ by "
+						       + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
+								          : "EPerson " + rp.getEPerson().getFullName()));
+			}
+		}
 
         for (Bundle bn : item.getBundles())
         {
-            // check for ANY read policies and report them:
-            for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, bn, Constants.READ)) {
-                // don't warn for authorised users
-                if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
-                    continue;
-                }
-                policiesOk = false;
-                report("CHECK WARNING: Item " + item.getHandle() + ", Bundle " + bn.getName() + " allows READ by "
-		                       + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
-				                          : "EPerson " + rp.getEPerson().getFullName()));
-            }
+	        if (distinguishTypes && !hasFullEmbargo(item) && bn.getName().equals(Constants.LICENSE_BUNDLE_NAME) || bn.getName().equals(Constants.METADATA_BUNDLE_NAME)) {
+	            continue; // don't worry about these bundles for non-full embargoes
+	        }
 
-            for (Bitstream bs : bn.getBitstreams()) {
-                for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, bs, Constants.READ)) {
-                    // don't warn for authorised users
-                    if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
-                        continue;
-                    }
-                    policiesOk = false;
-                    report("CHECK WARNING: Item " + item.getHandle() + ", Bitstream " + bs.getName() + " (in Bundle " + bn.getName() + ") allows READ by "
-		                           + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
-				                              : "EPerson " + rp.getEPerson().getFullName()));
-                }
-            }
+	        // check for ANY read policies and report them:
+	        for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, bn, Constants.READ)) {
+		        // don't warn for authorised users
+		        if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
+			        continue;
+		        }
+		        policiesOk = false;
+		        report("CHECK WARNING: Item " + item.getHandle() + ", Bundle " + bn.getName() + " allows READ by "
+				               + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
+						                  : "EPerson " + rp.getEPerson().getFullName()));
+	        }
+
+	        for (Bitstream bs : bn.getBitstreams()) {
+		        for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, bs, Constants.READ)) {
+			        // don't warn for authorised users
+			        if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
+				        continue;
+			        }
+			        policiesOk = false;
+			        report("CHECK WARNING: Item " + item.getHandle() + ", Bitstream " + bs.getName() + " (in Bundle " + bn.getName() + ") allows READ by "
+					               + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
+							                  : "EPerson " + rp.getEPerson().getFullName()));
+		        }
+	        }
         }
+
 		return policiesOk;
 	}
 
