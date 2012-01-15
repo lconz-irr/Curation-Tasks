@@ -1,5 +1,6 @@
 package nz.ac.lconz.irr.curate.task;
 
+import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.content.*;
 import org.dspace.core.ConfigurationManager;
@@ -77,6 +78,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 			}
 
 			if (changes) {
+				item.update();
 				context.complete();
 				context = null;
 				return Curator.CURATE_SUCCESS;
@@ -86,6 +88,8 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 				return Curator.CURATE_SKIP;
 			}
 		} catch (SQLException e) {
+			return Curator.CURATE_ERROR;
+		} catch (AuthorizeException e) {
 			return Curator.CURATE_ERROR;
 		} finally {
 			if (context != null) {
