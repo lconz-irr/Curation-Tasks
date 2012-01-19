@@ -33,6 +33,8 @@ import java.util.List;
 public class ProtectSensitiveBundles extends AbstractCurationTask {
 
 	private List<String> publicBundles;
+	private int bundlesFixed = 0;
+	private int bitstreamsFixed = 0;
 
 	@Override
 	public void init(Curator curator, String taskId) throws IOException {
@@ -74,7 +76,10 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 		} else {
 			return Curator.CURATE_SKIP;
 		}
-		
+
+		String message = "Fixed authorisation policies of " + bundlesFixed + " bundle(s) and " + bitstreamsFixed + " bitstream(s)";
+		report(message);
+		setResult(message);
 		return changes ? Curator.CURATE_SUCCESS : Curator.CURATE_FAIL;
 	}
 
@@ -107,12 +112,14 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 			if (bundleReadGroups != null && bundleReadGroups.length > 0) {
 				AuthorizeManager.removePoliciesActionFilter(context, bundle, Constants.READ);
 				changes = true;
+				bundlesFixed++;
 			}
 			for (Bitstream bitstream : bundle.getBitstreams()) {
 				Group[] bitstreamReadGroups = AuthorizeManager.getAuthorizedGroups(context, bitstream, Constants.READ);
 				if (bitstreamReadGroups != null && bitstreamReadGroups.length > 0) {
 					AuthorizeManager.removePoliciesActionFilter(context, bitstream, Constants.READ);
 					changes = true;
+					bitstreamsFixed++;
 				}
 			}
 		}
