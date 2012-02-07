@@ -168,21 +168,26 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 
 	private boolean checkPermissions(Context context, Item item) throws SQLException {
         Group authorisedToRead = findCanReadEmbargoedItemsGroup(context);
-        boolean policiesOk = true;
+        boolean unauthorisedCannotRead = true;
+		boolean authorisedCanRead = false;
 
 		if (!distinguishTypes || hasFullEmbargo(item)) {
 			// check for ANY read policies and report them (unless they are in the authorised group):
 			for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, item, Constants.READ)) {
-				// don't warn for authorised users
 				if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
+					// don't warn for authorised users
+					authorisedCanRead = true;
 					continue;
 				}
 				// do warn for everyone else
-				policiesOk = false;
+				unauthorisedCannotRead = false;
 				report("CHECK WARNING: Item " + item.getHandle() + " allows READ by "
 						       + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
 								          : "EPerson " + rp.getEPerson().getFullName()));
 			}
+		}
+		if (authorisedToRead != null && authorisedToRead.getID() != 1 && !authorisedCanRead) {
+			report("CHECK WARNING: Item " + item.getHandle() + " not readable by embargo group " + authorisedToRead.getName());
 		}
 
         for (Bundle bn : item.getBundles())
@@ -191,33 +196,48 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	            continue; // don't worry about these bundles for non-full embargoes
 	        }
 
+	        boolean authorisedCanReadBundle = false;
+
 	        // check for ANY read policies and report them:
 	        for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, bn, Constants.READ)) {
 		        // don't warn for authorised users
 		        if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
+			        authorisedCanReadBundle = true;
 			        continue;
 		        }
-		        policiesOk = false;
+		        unauthorisedCannotRead = false;
 		        report("CHECK WARNING: Item " + item.getHandle() + ", Bundle " + bn.getName() + " allows READ by "
 				               + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
 						                  : "EPerson " + rp.getEPerson().getFullName()));
 	        }
+	        if (authorisedToRead != null && authorisedToRead.getID() != 1 && !authorisedCanReadBundle) {
+		        report("CHECK WARNING: Item " + item.getHandle() + ", Bundle " + bn.getName() + " not readable by embargo group " + authorisedToRead.getName());
+		        authorisedCanRead = false;
+	        }
 
 	        for (Bitstream bs : bn.getBitstreams()) {
+		        boolean authorisedCanReadBitstream = false;
+
 		        for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, bs, Constants.READ)) {
 			        // don't warn for authorised users
 			        if (rp.getGroupID() != -1 && rp.getGroup().equals(authorisedToRead)) {
+				        authorisedCanReadBitstream = true;
 				        continue;
 			        }
-			        policiesOk = false;
+			        unauthorisedCannotRead = false;
 			        report("CHECK WARNING: Item " + item.getHandle() + ", Bitstream " + bs.getName() + " (in Bundle " + bn.getName() + ") allows READ by "
 					               + ((rp.getEPersonID() < 0) ? "Group " + rp.getGroup().getName()
 							                  : "EPerson " + rp.getEPerson().getFullName()));
 		        }
+		        if (authorisedToRead != null && authorisedToRead.getID() != 1 && !authorisedCanReadBitstream) {
+			        report("CHECK WARNING: Item " + item.getHandle() + ", Bitstream " + bs.getName() + " (in Bundle " + bn.getName() + ") not readable by embargo group " + authorisedToRead.getName());
+			        authorisedCanRead = false;
+		        }
+
 	        }
         }
 
-		return policiesOk;
+		return unauthorisedCannotRead && authorisedCanRead;
 	}
 
 
