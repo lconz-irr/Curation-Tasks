@@ -1,5 +1,6 @@
 package nz.ac.lconz.irr.curate.task;
 
+import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.content.*;
@@ -23,6 +24,8 @@ import java.util.List;
  */
 @Mutative
 public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
+	private static Logger log = Logger.getLogger(AnnotateWithBitstreamFormats.class);
+
 	private String schema;
 	private String element;
 	private String qualifier;
@@ -35,6 +38,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 		if (mdField == null) {
 			mdField = "dc.format.mimetype";
 		}
+		log.info("Using mimetype field " + mdField);
 
 		String[] mdComponents = mdField.split("\\.");
 		schema = mdComponents[0];
@@ -65,6 +69,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 			changes = clearExisting(item);
 			List<String> mimetypes = getBitstreamFormats(context, item);
 
+			String message;
 			if (!mimetypes.isEmpty())
 			{
 				String[] mimeArray = mimetypes.toArray(new String[mimetypes.size()]);
@@ -72,10 +77,14 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 				changes = true;
 
 				setResult(Arrays.deepToString(mimeArray));
-				report("Item " + item.getName() + ": mime types " + Arrays.deepToString(mimeArray));
+				message = "Item " + item.getName() + ": mime types " + Arrays.deepToString(mimeArray);
 			} else {
-				report("Item " + item.getName() + ": no mimetypes found");
+				message = "Item " + item.getName() + ": no mime types of public bitstreams found";
 			}
+
+			report(message);
+			setResult(message);
+			log.info(message);
 
 			if (changes) {
 				item.update();
@@ -88,8 +97,16 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 				return Curator.CURATE_SKIP;
 			}
 		} catch (SQLException e) {
+			String message = "Problem annotating item id=" + item.getID() + " with mime types: " + e.getMessage();
+			log.error(message, e);
+			report(message);
+			setResult(message);
 			return Curator.CURATE_ERROR;
 		} catch (AuthorizeException e) {
+			String message = "Problem annotating item id=" + item.getID() + " with mime types: " + e.getMessage();
+			log.error(message, e);
+			report(message);
+			setResult(message);
 			return Curator.CURATE_ERROR;
 		} finally {
 			if (context != null) {

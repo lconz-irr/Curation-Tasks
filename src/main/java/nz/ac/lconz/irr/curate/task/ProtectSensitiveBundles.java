@@ -1,5 +1,6 @@
 package nz.ac.lconz.irr.curate.task;
 
+import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.content.Bitstream;
 import org.dspace.content.Bundle;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,6 +33,7 @@ import java.util.List;
  */
 @Mutative
 public class ProtectSensitiveBundles extends AbstractCurationTask {
+	private static Logger log = Logger.getLogger(AnnotateWithBitstreamFormats.class);
 
 	private List<String> publicBundles;
 	private int bundlesFixed = 0;
@@ -47,6 +50,7 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 		if (publicBundles == null) {
 			publicBundles = Arrays.asList(new String[] {"ORIGINAL", "LICENSE", "CC-LICENSE", "THUMBNAIL", "TEXT"});
 		}
+		log.info("Public bundles are " + publicBundles);
 	}
 
 	@Override
@@ -66,7 +70,10 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 					context = null;
 				}
 			} catch (SQLException e) {
-				report(e.getMessage());
+				String message = "Problem protecting bundles for object type=" + dso.getType() + " id=" + dso.getID() + ": " + e.getMessage();
+				report(message);
+				setResult(message);
+				log.error(message, e);
 				return Curator.CURATE_ERROR;
 			} finally {
 				if (context != null) {
@@ -74,12 +81,16 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 				}
 			}
 		} else {
+			String message = "Protect bundle curation task is applicable only for items and bundles";
+			report(message);
+			setResult(message);
 			return Curator.CURATE_SKIP;
 		}
 
 		String message = "Fixed authorisation policies of " + bundlesFixed + " bundle(s) and " + bitstreamsFixed + " bitstream(s)";
 		report(message);
 		setResult(message);
+		log.info(message);
 		return changes ? Curator.CURATE_SUCCESS : Curator.CURATE_FAIL;
 	}
 
