@@ -12,6 +12,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <!-- DSpace Version Information (supported version of DSpace) -->
+      <dspace.version>1.7.2</dspace.version>
   </properties>
 
   <build>
@@ -20,8 +22,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>5</source>
-          <target>5</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
     </plugins>
@@ -36,10 +38,16 @@
   </repositories>
 
   <dependencies>
+      <dependency>
+          <groupId>org.dspace</groupId>
+          <artifactId>mediafilter</artifactId>
+          <version>1.0-SNAPSHOT</version>
+      </dependency>
+
     <dependency>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-api</artifactId>
-      <version>1.7.2</version>
+      <version>${dspace.version}</version>
     </dependency>
 
     <dependency>
