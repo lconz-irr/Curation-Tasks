@@ -48,4 +48,11 @@
       <version>5.0.2</version>
     </dependency>
   </dependencies>
+
+  <scm>
+    <connection>scm:git:git://github.com/lconz-irr/Curation-Tasks.git</connection>
+    <url>https://github.com/lconz-irr/Curation-Tasks</url>
+    <developerConnection>scm:git:ssh://git@github.com/lconz-irr/Curation-Tasks.git</developerConnection>
+  </scm>
+
 </project>
