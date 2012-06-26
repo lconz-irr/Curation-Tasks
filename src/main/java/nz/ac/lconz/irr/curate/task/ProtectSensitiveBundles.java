@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Mutative
 public class ProtectSensitiveBundles extends AbstractCurationTask {
-	private static Logger log = Logger.getLogger(AnnotateWithBitstreamFormats.class);
+	private static Logger log = Logger.getLogger(ProtectSensitiveBundles.class);
 
 	private List<String> publicBundles;
 	private int bundlesFixed = 0;
