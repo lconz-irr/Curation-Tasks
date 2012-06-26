@@ -67,7 +67,13 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 		numFixedEmbargoedItems = 0;
         distribute(dso);
         formatResults();
-        return Curator.CURATE_SUCCESS;
+        if (numFixedEmbargoedItems > 0) {
+	        return Curator.CURATE_SUCCESS;
+        } else if (numOkEmbargoedItems > 0) {
+	        return Curator.CURATE_FAIL;
+        } else {
+	        return Curator.CURATE_SKIP;
+        }
 	}
 
 	private void formatResults() {
@@ -111,6 +117,8 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 				context = null;
 				numFixedEmbargoedItems++;
 			} else {
+				context.abort();
+				context = null;
 				numOkEmbargoedItems++;
 			}
 		} catch (SQLException e) {
