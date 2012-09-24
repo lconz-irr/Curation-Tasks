@@ -13,13 +13,13 @@ import org.dspace.curate.Curator;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
- * Created with IntelliJ IDEA.
- * User: schweer
- * Date: 23/04/12
- * Time: 11:44 AM
- * To change this template use File | Settings | File Templates.
+ * @author Andrea Schweer for the LCoNZ Institutional Research Repositories
+ *
+ * Curation task to make a bitstream with the name thesis.pdf the primary bitstream in the content bundle.
+ * It will also re-order the bitstreams in the content bundle to ensure that the primary bitstream is first in the bitstream order.
  */
 public class MakeThesisPrimaryBitstream extends AbstractCurationTask {
 	private final static Logger log = Logger.getLogger(MakeThesisPrimaryBitstream.class);
@@ -65,6 +65,9 @@ public class MakeThesisPrimaryBitstream extends AbstractCurationTask {
 			try {
 				thesisBundle.setPrimaryBitstreamID(thesisBitstream.getID());
 				thesisBundle.update();
+
+				makePrimaryBitstreamFirst(thesisBundle);
+				thesisBundle.update();
 			} catch (SQLException e) {
 				String message = "Problem setting primary bitstream id=" + thesisBitstream.getID() + " for item id=" + item.getID();
 				log.warn(message, e);
@@ -90,5 +93,29 @@ public class MakeThesisPrimaryBitstream extends AbstractCurationTask {
 			log.info(message);
 			return Curator.CURATE_FAIL;
 		}
+	}
+
+	private void makePrimaryBitstreamFirst(Bundle bundle) throws AuthorizeException, SQLException {
+		int primaryBitstreamID = bundle.getPrimaryBitstreamID();
+		if (primaryBitstreamID < 0) {
+			return; // no primary bitstream -> nothing to be done
+		}
+
+		Bitstream[] bitstreams = bundle.getBitstreams();
+		ArrayList<Integer> ids = new ArrayList<Integer>(bitstreams.length);
+
+		for (Bitstream bitstream : bitstreams) {
+			int bitstreamID = bitstream.getID();
+			if (bitstreamID == primaryBitstreamID) {
+				ids.add(0, bitstreamID); // insert as first
+			} else {
+				ids.add(bitstreamID); // insert in order
+			}
+		}
+		int[] newOrder = new int[ids.size()];
+		for (int i = 0; i < ids.size(); i++) {
+			newOrder[i] = ids.get(i);
+		}
+		bundle.setOrder(newOrder);
 	}
 }
