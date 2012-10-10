@@ -1,73 +1,77 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
   <groupId>nz.ac.lconz.irr</groupId>
   <artifactId>lconz-curation-tasks</artifactId>
   <version>2.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>curation-tasks</name>
-  <url>https://github.com/lconz-irr/Curation-Tasks</url>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>5</source>
-          <target>5</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-  <repositories>
-    <repository>
-      <id>itextpdf.com</id>
-      <name>Maven Repository for iText</name>
-      <url>http://maven.itextpdf.com/</url>
-    </repository>
-  </repositories>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.dspace</groupId>
-      <artifactId>dspace-api</artifactId>
-      <version>1.8.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.itextpdf</groupId>
-      <artifactId>itextpdf</artifactId>
-      <version>5.0.2</version>
-    </dependency>
-  </dependencies>
-
-  <scm>
-    <connection>scm:git:git://github.com/lconz-irr/Curation-Tasks.git</connection>
+    <name>curation-tasks</name>
     <url>https://github.com/lconz-irr/Curation-Tasks</url>
-    <developerConnection>scm:git:ssh://git@github.com/lconz-irr/Curation-Tasks.git</developerConnection>
-  </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>7</source>
+                    <target>7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>itextpdf.com</id>
+            <name>Maven Repository for iText</name>
+            <url>http://maven.itextpdf.com/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.dspace</groupId>
+            <artifactId>dspace-api</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
+            <version>5.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.9</version>
+        </dependency>
+    </dependencies>
+    <scm>
+        <connection>scm:git:git://github.com/lconz-irr/Curation-Tasks.git</connection>
+        <url>https://github.com/lconz-irr/Curation-Tasks</url>
+        <developerConnection>scm:git:ssh://git@github.com/lconz-irr/Curation-Tasks.git</developerConnection>
+    </scm>
 
     <distributionManagement>
-      <!-- Publish versioned releases here -->
-      <repository>
-	<id>lconz-irr</id>
-	<name>LCoNZ IRR Releases</name>
-	<url>http://mvnrepo.its.waikato.ac.nz:8081/nexus/content/repositories/lconz-irr-releases/</url>
-      </repository>
-      
-      <!-- Publish snapshots here -->
-      <snapshotRepository>
-	<id>lconz-irr</id>
-	<name>LCoNZ IRR Snapshots</name>
-	<url>http://mvnrepo.its.waikato.ac.nz:8081/nexus/content/repositories/lconz-irr-snapshots/</url>
-      </snapshotRepository>
+        <!-- Publish versioned releases here -->
+        <repository>
+            <id>lconz-irr</id>
+            <name>LCoNZ IRR Releases</name>
+            <url>http://mvnrepo.its.waikato.ac.nz:8081/nexus/content/repositories/lconz-irr-releases/</url>
+        </repository>
+
+        <!-- Publish snapshots here -->
+        <snapshotRepository>
+            <id>lconz-irr</id>
+            <name>LCoNZ IRR Snapshots</name>
+            <url>http://mvnrepo.its.waikato.ac.nz:8081/nexus/content/repositories/lconz-irr-snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
 
 </project>
