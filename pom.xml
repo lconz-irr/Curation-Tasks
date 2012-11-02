@@ -26,14 +26,6 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
-      <id>itextpdf.com</id>
-      <name>Maven Repository for iText</name>
-      <url>http://maven.itextpdf.com/</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>org.dspace</groupId>
