@@ -10,27 +10,11 @@ import org.dspace.core.Utils;
 import java.io.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: schweer
- * Date: 3/09/12
- * Time: 3:46 PM
- * To change this template use File | Settings | File Templates.
+ * @author Andrea Schweer schweer@waikato.ac.nz for the LCoNZ Institutional Research Repositories
  */
 public class VideoConversionHelper {
 	private static final Logger log = Logger.getLogger(VideoConversionHelper.class);
-
-	/**
-	 * Check whether this filter applies to a given bitstream.
-	 * This particular task applies to all video files (ie bitstreams whose format mimetype starts with "video/").
-	 *
-	 *
-	 * @param item The item whose bitstream is to be filtered
-	 * @param bitstream The bitstream to be filtered
-	 * @return True when this filter applies to this particular bitstream, false otherwise
-	 */
-	protected boolean canFilter(Item item, Bitstream bitstream) {
-		return bitstream.getFormat().getMIMEType().startsWith("video/");
-	}
+	public static final int DEFAULT_TIMEOUT = 1000 * 60 * 10;
 
 	protected int run(CommandLine cmdLine, int timeout) throws Exception {
 		Executor executor = new DefaultExecutor();
@@ -51,7 +35,7 @@ public class VideoConversionHelper {
 	}
 
 	protected String makeTempInFile(InputStream sourceStream) throws IOException {
-		File sourceTmp = File.createTempFile("IMthumbSource" + sourceStream.hashCode(),".tmp");
+		File sourceTmp = File.createTempFile("VideoConversionSource" + sourceStream.hashCode(),".tmp");
 		sourceTmp.deleteOnExit();
 		try
 		{
