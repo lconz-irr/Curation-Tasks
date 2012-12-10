@@ -10,14 +10,19 @@ import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Distributive;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Andrea Schweer schweer@waikato.ac.nz for the LCoNZ Institutional Research Repositories
  */
+@Distributive
 public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 	@Override
 	public int perform(DSpaceObject dso) throws IOException {
@@ -35,12 +40,23 @@ public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 
 			for (Collection collection : collections) {
 				AuthorizeManager.inheritPolicies(context, community, collection);
+
+				// then remove duplicate policies
+				List<ResourcePolicy> policies = AuthorizeManager.getPolicies(context, collection);
+				Set<ResourcePolicy> alreadySeen = new HashSet<ResourcePolicy>();
+				for (ResourcePolicy policy : policies) {
+					if (alreadySeen.contains(policy)) {
+						policy.delete();
+					} else {
+						alreadySeen.add(policy);
+					}
+				}
 			}
 
 			context.commit();
 			context = null;
 
-			String message = String.format("%d child collections inherited the policies of the community\"%d\"", collections.length, community.getName());
+			String message = String.format("%d child collections inherited the policies of the community \"%s\"", collections.length, community.getName());
 			report(message);
 			setResult(message);
 
