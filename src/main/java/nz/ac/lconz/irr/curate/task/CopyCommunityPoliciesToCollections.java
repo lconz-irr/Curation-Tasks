@@ -14,7 +14,6 @@ import org.dspace.curate.Distributive;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,27 +35,13 @@ public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 		Context context = null;
 		try {
 			context = new Context();
-			Collection[] collections = community.getCollections();
 
-			for (Collection collection : collections) {
-				AuthorizeManager.inheritPolicies(context, community, collection);
-
-				// then remove duplicate policies
-				List<ResourcePolicy> policies = AuthorizeManager.getPolicies(context, collection);
-				Set<ResourcePolicy> alreadySeen = new HashSet<ResourcePolicy>();
-				for (ResourcePolicy policy : policies) {
-					if (alreadySeen.contains(policy)) {
-						policy.delete();
-					} else {
-						alreadySeen.add(policy);
-					}
-				}
-			}
+			workOnCommunity(context, community);
 
 			context.commit();
 			context = null;
 
-			String message = String.format("%d child collections inherited the policies of the community \"%s\"", collections.length, community.getName());
+			String message = String.format("Child communities/collections inherited the policies of the community \"%s\"", community.getName());
 			report(message);
 			setResult(message);
 
@@ -74,6 +59,34 @@ public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 		} finally {
 			if (context != null) {
 				context.abort();
+			}
+		}
+	}
+
+	private void workOnCommunity(Context context, Community community) throws SQLException, AuthorizeException {
+		Collection[] collections = community.getCollections();
+		for (Collection collection : collections) {
+			inheritWithoutDuplicates(context, community, collection);
+		}
+
+		Community[] children = community.getSubcommunities();
+		for (Community child : children) {
+			inheritWithoutDuplicates(context, community, child);
+			workOnCommunity(context, child);
+		}
+	}
+
+	private void inheritWithoutDuplicates(Context context, Community community, DSpaceObject target) throws SQLException, AuthorizeException {
+		AuthorizeManager.inheritPolicies(context, community, target);
+
+		// then remove duplicate policies
+		List<ResourcePolicy> policies = AuthorizeManager.getPolicies(context, target);
+		Set<ResourcePolicy> alreadySeen = new HashSet<ResourcePolicy>();
+		for (ResourcePolicy policy : policies) {
+			if (alreadySeen.contains(policy)) {
+				policy.delete();
+			} else {
+				alreadySeen.add(policy);
 			}
 		}
 	}
