@@ -4,6 +4,7 @@ import nz.ac.lconz.irr.crosswalk.citeproc.CiteprocCrosswalk;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
+import org.dspace.content.DCValue;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
 import org.dspace.content.crosswalk.CrosswalkException;
@@ -53,6 +54,20 @@ public class GenerateCitation extends AbstractCurationTask {
 		}
 
 		Item item = (Item) dSpaceObject;
+
+		DCValue[] existingCitation = item.getMetadata(schema, element, qualifier, Item.ANY);
+		boolean hasCitation = (existingCitation != null && existingCitation.length > 0 && existingCitation[0].value != null && !"".equals(existingCitation[0].value));
+
+		boolean overrideExisting = taskBooleanProperty("force", false);
+
+		if (hasCitation && !overrideExisting) {
+			String message = "Item already has citation, skipping; item_id=" + item.getID();
+			log.info(message);
+			report(message);
+			setResult(message);
+			return Curator.CURATE_SKIP;
+		}
+
 		Context context = null;
 		String itemJSON;
 		try {
