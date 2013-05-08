@@ -63,7 +63,9 @@ public class IdentifyUnknownFormats extends AbstractCurationTask {
                         BitstreamFormat format = bitstream.getFormat();
                         if (format.getSupportLevel() == BitstreamFormat.UNKNOWN) {
                             String extension = detectExtension(bitstream);
-                            message = "Item handle: " + item.getHandle() + "\tUnknown format for bitstream: " + bitstream.getName() + extension;
+                            String collectionName = item.getOwningCollection().getName();
+                            int collectionID = item.getOwningCollection().getID();
+                            message = "Item handle: " + item.getHandle() + "\tUnknown format for bitstream: " + bitstream.getName() +"\t"+ extension+"\tCollection: "+collectionName+" (ID "+collectionID+")";
                         }
                     }
                 }
@@ -93,8 +95,8 @@ public class IdentifyUnknownFormats extends AbstractCurationTask {
             is.close();
         } catch (Exception e) {
             log.warn("Cannot suggest MIME type for bitstream " + bitstream.getName() + " with id: " + bitstream.getID(), e);
-            return "\tFormat suggestion failed";
+            return "Format suggestion failed";
         }
-        return "\tSuggested format: " + extension;
+        return "Suggested format: " + extension;
     }
 }
