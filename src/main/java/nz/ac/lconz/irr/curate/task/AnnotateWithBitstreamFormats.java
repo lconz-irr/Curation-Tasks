@@ -10,6 +10,7 @@ import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
 import org.dspace.curate.Mutative;
+import org.dspace.embargo.EmbargoManager;
 import org.dspace.eperson.Group;
 
 import java.io.IOException;
@@ -115,10 +116,17 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 		}
 	}
 
-	private List<String> getBitstreamFormats(Context c, Item item) throws SQLException {
+	private List<String> getBitstreamFormats(Context c, Item item) throws SQLException, AuthorizeException, IOException {
 		// get 'original' bundles
 		Bundle[] bundles = item.getBundles("ORIGINAL");
 		List<String> mimetypes = new ArrayList<String>();
+
+        //check for embargo and return empty list if item has an embargo
+        DCDate embargoDate = EmbargoManager.getEmbargoDate(c, item);
+        if(embargoDate != null){
+            return mimetypes;
+        }
+
 		for (Bundle bundle : bundles)
 		{
 			if (!anonymousCanRead(c, bundle))
