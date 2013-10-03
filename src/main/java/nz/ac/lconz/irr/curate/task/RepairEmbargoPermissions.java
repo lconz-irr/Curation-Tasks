@@ -101,7 +101,7 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 		try {
 			context = new Context();
 			context.ignoreAuthorization();
-			if (EmbargoManager.getEmbargoDate(context, item) == null) {
+			if (EmbargoManager.getEmbargoTermsAsDate(context, item) == null) {
 				context.abort();
 				context = null;
 				numSkippedItems++;

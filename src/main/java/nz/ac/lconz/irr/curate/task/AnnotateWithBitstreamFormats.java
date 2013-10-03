@@ -122,7 +122,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 		List<String> mimetypes = new ArrayList<String>();
 
         //check for embargo and return empty list if item has an embargo
-        DCDate embargoDate = EmbargoManager.getEmbargoDate(c, item);
+        DCDate embargoDate = EmbargoManager.getEmbargoTermsAsDate(c, item);
         if(embargoDate != null){
             return mimetypes;
         }
