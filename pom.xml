@@ -30,7 +30,7 @@
     <dependency>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-api</artifactId>
-      <version>4.0</version>
+      <version>4.1</version>
       <scope>provided</scope>
     </dependency>
 
