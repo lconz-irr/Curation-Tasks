@@ -1,4 +1,4 @@
-package nz.ac.lconz.irr.curate.task;
+package nz.ac.lconz.irr.curate.task.thesisembargo;
 
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
@@ -15,7 +15,6 @@ import org.dspace.eperson.Group;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
