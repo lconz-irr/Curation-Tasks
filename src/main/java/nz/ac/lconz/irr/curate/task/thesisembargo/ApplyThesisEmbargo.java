@@ -79,12 +79,13 @@ public class ApplyThesisEmbargo extends AbstractCurationTask {
 			return;  // item isn't embargoed
 		}
 
+
 		Context context = null;
 		try {
 			context = new Context();
 			context.turnOffAuthorisationSystem();
 
-			item.setDiscoverable(false);
+			item.setDiscoverable(true);
 
 			AuthorizeManager.removeAllPoliciesByDSOAndType(context, item, ResourcePolicy.TYPE_INHERITED);
 			ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Thesis embargo", 1, null, null, Constants.READ, "Thesis embargo", item);

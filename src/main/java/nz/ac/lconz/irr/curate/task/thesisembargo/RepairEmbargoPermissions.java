@@ -142,20 +142,18 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	}
 
 	private void fixPermissions(Context context, Item item) throws SQLException, AuthorizeException {
+		report("Fixing permissions for item " + item.getHandle());
 		makeItemAuthorisedReadOnly(context, item);
 		makeBundlesBitstreamsAuthorisedReadOnly(context, item, FULL_EMBARGO_IGNORED_BUNDLES);
-		if (item.isDiscoverable()) {
-			item.setDiscoverable(false);
+		if (!item.isDiscoverable()) {
+			item.setDiscoverable(true);
 			item.update();
+			report("made item discoverable");
 		}
 	}
 
 	public boolean checkPermissions(Context context, Item item) throws SQLException {
 		boolean allOk = true;
-		if (item.isDiscoverable()) {
-			allOk = false;
-			report("Item id=" + item.getID() + " is discoverable");
-		}
 		if (!checkItemRead(context, item)) {
 			allOk = false;
 			report("Item id=" + item.getID() + " is readable but shouldn't be");
@@ -176,6 +174,10 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	}
 
 	private boolean checkItemRead(Context context, Item item) throws SQLException {
+		if (!item.isDiscoverable()) {
+			report("CHECK WARNING: Item " + item.getHandle() + " is not discoverable but should be");
+			return false;
+		}
 		// check for ANY read policies and report them (unless they are in the authorised group):
 		for (ResourcePolicy rp : AuthorizeManager.getPoliciesActionFilter(context, item, Constants.READ))
 		{
@@ -285,7 +287,7 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 
 			// add authorised group access back in
 			if (readGroupId >= 0 && !AuthorizeManager.isAnIdenticalPolicyAlreadyInPlace(context, bundle, readGroupId, Constants.READ, -1)) {
-				ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Thesis Embargo", readGroupId, null, null, Constants.READ, "Set by repair permissions curation task", bundle);
+				ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Thesis embargo", readGroupId, null, null, Constants.READ, "Set by repair permissions curation task", bundle);
 				if (policy != null) {
 					policy.update();
 				}
@@ -298,7 +300,7 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 
 				// add authorised group access back in
 				if (readGroupId >= 0 && !AuthorizeManager.isAnIdenticalPolicyAlreadyInPlace(context, bitstream, readGroupId, Constants.READ, -1)) {
-					ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Embargo permission", readGroupId, null, null, Constants.READ, "Set by repair permissions curation task", bitstream);
+					ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Thesis embargo", readGroupId, null, null, Constants.READ, "Set by repair permissions curation task", bitstream);
 					if (policy != null) {
 						policy.update();
 					}
@@ -314,7 +316,7 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 		if (readGroupId >= 0)
 		{
 			if (!AuthorizeManager.isAnIdenticalPolicyAlreadyInPlace(context, item, readGroupId, Constants.READ, -1)) {
-				ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Embargo permission", readGroupId, null, null, Constants.READ, "Set by repair permissions curation task", item);
+				ResourcePolicy policy = AuthorizeManager.createOrModifyPolicy(null, context, "Thesis embargo", readGroupId, null, null, Constants.READ, "Set by repair permissions curation task", item);
 				if (policy != null) {
 					policy.update();
 				}
