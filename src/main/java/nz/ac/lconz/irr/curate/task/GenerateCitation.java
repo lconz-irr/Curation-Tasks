@@ -13,6 +13,7 @@ import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Mutative;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -25,6 +26,7 @@ import java.sql.SQLException;
  *
  * Curation task to automatically generate a citation from the item's metadata.
  */
+@Mutative
 public class GenerateCitation extends AbstractCurationTask {
 	private static final Logger log = Logger.getLogger(GenerateCitation.class);
 
@@ -71,8 +73,7 @@ public class GenerateCitation extends AbstractCurationTask {
 		Context context = null;
 		String itemJSON;
 		try {
-			context = new Context();
-			context.turnOffAuthorisationSystem();
+			context = Curator.curationContext();
 			itemJSON = itemToCiteprocJSON(context, item);
 		} catch (SQLException e) {
 			String message = taskId + "Problem generating citation";
@@ -92,10 +93,6 @@ public class GenerateCitation extends AbstractCurationTask {
 			report(message);
 			setResult(message);
 			return Curator.CURATE_ERROR;
-		} finally {
-			if (context != null) {
-				context.abort();
-			}
 		}
 
 		if (itemJSON == null || "".equals(itemJSON)) {

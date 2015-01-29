@@ -10,6 +10,7 @@ import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Mutative;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
  * Curation task to make a bitstream with the name thesis.pdf the primary bitstream in the content bundle.
  * It will also re-order the bitstreams in the content bundle to ensure that the primary bitstream is first in the bitstream order.
  */
+@Mutative
 public class MakeThesisPrimaryBitstream extends AbstractCurationTask {
 	private final static Logger log = Logger.getLogger(MakeThesisPrimaryBitstream.class);
 

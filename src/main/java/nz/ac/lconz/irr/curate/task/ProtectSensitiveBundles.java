@@ -4,10 +4,10 @@ import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.content.Bitstream;
 import org.dspace.content.Bundle;
+import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
-import org.dspace.content.DSpaceObject;
 import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
@@ -16,9 +16,7 @@ import org.dspace.eperson.Group;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,19 +53,14 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 
 	@Override
 	public int perform(DSpaceObject dso) throws IOException {
-		boolean changes = false;
+		boolean changes;
 		if (dso.getType() == Constants.ITEM || dso.getType() == Constants.BUNDLE) {
 			Context context = null;
 			try {
-				context = new Context();
-				context.ignoreAuthorization();
+				context = Curator.curationContext();
 				changes = process(dso, context);
 				if (changes) {
-					context.complete();
-					context = null;
-				} else {
-					context.abort();
-					context = null;
+					context.commit();
 				}
 			} catch (SQLException e) {
 				String message = "Problem protecting bundles for object type=" + dso.getType() + " id=" + dso.getID() + ": " + e.getMessage();
@@ -75,10 +68,6 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 				setResult(message);
 				log.error(message, e);
 				return Curator.CURATE_ERROR;
-			} finally {
-				if (context != null) {
-					context.abort();
-				}
 			}
 		} else {
 			String message = "Protect bundle curation task is applicable only for items and bundles";

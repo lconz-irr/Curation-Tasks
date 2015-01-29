@@ -11,6 +11,7 @@ import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
 import org.dspace.curate.Distributive;
+import org.dspace.curate.Mutative;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -22,6 +23,7 @@ import java.util.Set;
  * @author Andrea Schweer schweer@waikato.ac.nz for the LCoNZ Institutional Research Repositories
  */
 @Distributive
+@Mutative
 public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 	@Override
 	public int perform(DSpaceObject dso) throws IOException {
@@ -34,12 +36,11 @@ public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 		Community community = (Community) dso;
 		Context context = null;
 		try {
-			context = new Context();
+			context = Curator.curationContext();
 
 			workOnCommunity(context, community);
 
 			context.commit();
-			context = null;
 
 			String message = String.format("Child communities/collections inherited the policies of the community \"%s\"", community.getName());
 			report(message);
@@ -56,10 +57,6 @@ public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 			report(message);
 			setResult(message);
 			return Curator.CURATE_ERROR;
-		} finally {
-			if (context != null) {
-				context.abort();
-			}
 		}
 	}
 

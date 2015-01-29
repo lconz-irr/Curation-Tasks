@@ -59,11 +59,9 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 
 		Item item = (Item) dso;
 
-		// TODO make distributive to avoid creating lots of contexts?
 		Context context = null;
 		try {
-			context = new Context();
-			context.ignoreAuthorization();
+			context = Curator.curationContext();
 
 			boolean changes;
 
@@ -89,12 +87,9 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 
 			if (changes) {
 				item.update();
-				context.complete();
-				context = null;
+				context.commit();
 				return Curator.CURATE_SUCCESS;
 			} else {
-				context.abort();
-				context = null;
 				return Curator.CURATE_SKIP;
 			}
 		} catch (SQLException e) {
@@ -109,10 +104,6 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 			report(message);
 			setResult(message);
 			return Curator.CURATE_ERROR;
-		} finally {
-			if (context != null) {
-				context.abort();
-			}
 		}
 	}
 

@@ -9,6 +9,7 @@ import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Mutative;
 import org.dspace.license.CreativeCommons;
 import org.jaxen.JaxenException;
 import org.jaxen.jdom.JDOMXPath;
@@ -27,6 +28,7 @@ import java.sql.SQLException;
  * Time: 5:04 PM
  * To change this template use File | Settings | File Templates.
  */
+@Mutative
 public class AddCCMetadata extends AbstractCurationTask {
 
 	private static final Logger log = Logger.getLogger(AddCCMetadata.class);
@@ -41,10 +43,8 @@ public class AddCCMetadata extends AbstractCurationTask {
 
 		Context context = null;
 		try {
-			context = new Context();
+			context = Curator.curationContext();
 			if (!CreativeCommons.hasLicense(context, item)) {
-				context.abort();
-				context = null;
 				String message = "Item id=" + item.getID() + " does not have a CC license";
 				report(message);
 				setResult(message);
@@ -60,17 +60,13 @@ public class AddCCMetadata extends AbstractCurationTask {
 			if (uriChanged || nameChanged) {
 				item.update();
 
-				context.complete();
-				context = null;
+				context.commit();
 
 				String message = "Set license uri/name for item id=" + item.getID();
 				report(message);
 				setResult(message);
 				return Curator.CURATE_SUCCESS;
 			} else {
-				context.abort();
-				context = null;
-
 				String message = "Item id=" + item.getID() + " already has correct CC metadata";
 				report(message);
 				setResult(message);
@@ -82,14 +78,7 @@ public class AddCCMetadata extends AbstractCurationTask {
 			setResult(message);
 			log.error(message, e);
 
-			context.abort();
-			context = null;
-
 			return Curator.CURATE_ERROR;
-		} finally {
-			if (context != null) {
-				context.abort();
-			}
 		}
 	}
 

@@ -48,8 +48,7 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 
 		boolean changes = false;
 		try {
-			context = new Context();
-			context.turnOffAuthorisationSystem();
+			context = Curator.curationContext();
 
 			if (dso.getType() == Constants.SITE) {
 				ItemIterator items = Item.findAll(context);
@@ -86,11 +85,8 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 			}
 
 			if (changes) {
-				context.complete();
-			} else {
-				context.abort();
+				context.commit();
 			}
-			context = null;
 		} catch (SQLException e) {
 			String message = "Problem while performing task on object id=" + dso.getID() + ", " + dso.getType() + "; " + e.getMessage();
 			log.error(message, e);
@@ -103,10 +99,6 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 			report(message);
 			setResult(message);
 			return Curator.CURATE_ERROR;
-		} finally {
-			if (context != null) {
-				context.abort();
-			}
 		}
 
 		if (changes) {

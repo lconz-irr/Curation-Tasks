@@ -12,6 +12,7 @@ import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
+import org.dspace.curate.Mutative;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ import java.util.List;
 /**
  * @author Andrea Schweer schweer@waikato.ac.nz for LCoNZ
  */
+@Mutative
 public class RetroactivelyAssignAuthorityValue extends AbstractCurationTask {
 
 	private static final Logger log = Logger.getLogger(RetroactivelyAssignAuthorityValue.class);
