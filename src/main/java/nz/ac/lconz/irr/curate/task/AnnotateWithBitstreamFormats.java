@@ -158,7 +158,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 
 	private boolean clearExisting(Item item) {
 		boolean changes = false;
-		DCValue[] existingMetadata = item.getMetadata(schema, element, qualifier, Item.ANY);
+		Metadatum[] existingMetadata = item.getMetadata(schema, element, qualifier, Item.ANY);
 		if (existingMetadata != null && existingMetadata.length > 0)
 		{
 				item.clearMetadata(schema, element, qualifier, Item.ANY);

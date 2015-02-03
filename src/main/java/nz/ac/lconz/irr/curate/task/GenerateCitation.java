@@ -4,9 +4,9 @@ import nz.ac.lconz.irr.crosswalk.citeproc.CiteprocCrosswalk;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.DCValue;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 import org.dspace.content.crosswalk.CrosswalkException;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
@@ -57,7 +57,7 @@ public class GenerateCitation extends AbstractCurationTask {
 
 		Item item = (Item) dSpaceObject;
 
-		DCValue[] existingCitation = item.getMetadata(schema, element, qualifier, Item.ANY);
+		Metadatum[] existingCitation = item.getMetadata(schema, element, qualifier, Item.ANY);
 		boolean hasCitation = (existingCitation != null && existingCitation.length > 0 && existingCitation[0].value != null && !"".equals(existingCitation[0].value));
 
 		boolean overrideExisting = taskBooleanProperty("force", false);

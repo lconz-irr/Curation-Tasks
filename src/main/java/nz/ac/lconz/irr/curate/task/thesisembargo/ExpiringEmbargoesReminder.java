@@ -1,11 +1,10 @@
 package nz.ac.lconz.irr.curate.task.thesisembargo;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.dspace.content.DCDate;
-import org.dspace.content.DCValue;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Email;
 import org.dspace.core.I18nUtil;
@@ -79,13 +78,7 @@ public class ExpiringEmbargoesReminder extends AbstractCurationTask {
 
 			try {
 				email.send();
-			} catch (MessagingException e) {
-				String error = "Cannot send notification e-mail: " + e.getMessage();
-				log.error(error, e);
-				report(error);
-				setResult(error);
-				hasError = true;
-			} catch (IOException e) {
+			} catch (MessagingException | IOException e) {
 				String error = "Cannot send notification e-mail: " + e.getMessage();
 				log.error(error, e);
 				report(error);
@@ -155,7 +148,7 @@ public class ExpiringEmbargoesReminder extends AbstractCurationTask {
 			return; // we don't want non-archived items
 		}
 
-		DCValue[] dateMetadata = item.getMetadata(dateSchema, dateElement, dateQualifier, Item.ANY);
+		Metadatum[] dateMetadata = item.getMetadata(dateSchema, dateElement, dateQualifier, Item.ANY);
 		if (dateMetadata == null || dateMetadata.length == 0) {
 			return; // item isn't embargoed
 		}
@@ -249,8 +242,8 @@ public class ExpiringEmbargoesReminder extends AbstractCurationTask {
 			}
 
 			StringBuilder authors = new StringBuilder();
-			DCValue[] authorMetadata = item.getMetadata("dc", "contributor", "author", Item.ANY);
-			for (DCValue author : authorMetadata) {
+			Metadatum[] authorMetadata = item.getMetadata("dc", "contributor", "author", Item.ANY);
+			for (Metadatum author : authorMetadata) {
 				if (author.value != null && !"".equals(author.value)){
 					if (authors.length() > 0) {
 						authors.append("; ");

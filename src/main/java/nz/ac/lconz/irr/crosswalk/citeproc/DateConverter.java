@@ -4,15 +4,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.dspace.content.DCDate;
-import org.dspace.content.DCValue;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 
 /**
  * @author Andrea Schweer schweer@waikato.ac.nz for the LCoNZ Institutional Research Repositories
  */
 public class DateConverter implements Converter {
 	@Override
-	public void insertValue(ObjectNode rootNode, String field, Item item, DCValue[] mdValue, ObjectMapper mapper) {
+	public void insertValue(ObjectNode rootNode, String field, Item item, Metadatum[] mdValue, ObjectMapper mapper) {
 		if (mdValue == null || mdValue.length < 1 || mdValue[0] == null || mdValue[0].value == null) {
 			return;
 		}

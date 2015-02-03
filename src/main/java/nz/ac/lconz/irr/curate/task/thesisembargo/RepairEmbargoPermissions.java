@@ -158,7 +158,7 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	}
 
 	public DCDate getLiftDate(Item item) {
-		DCValue[] md = item.getMetadata(schema, element, qualifier, Item.ANY);
+		Metadatum[] md = item.getMetadata(schema, element, qualifier, Item.ANY);
 		if (md == null || md.length < 1 || md[0].value == null || "".equals(md[0].value)) {
 			return null;
 		}

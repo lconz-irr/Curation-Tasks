@@ -4,8 +4,8 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
-import org.dspace.content.DCValue;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 
 /**
  * @author Andrea Schweer schweer@waikato.ac.nz for the LCoNZ Institutional Research Repositories
@@ -14,12 +14,12 @@ public class NameConverter implements Converter {
 	private static final Logger log = Logger.getLogger(NameConverter.class);
 
 	@Override
-	public void insertValue(ObjectNode rootNode, String field, Item item, DCValue[] mdValues, ObjectMapper mapper) {
+	public void insertValue(ObjectNode rootNode, String field, Item item, Metadatum[] mdValues, ObjectMapper mapper) {
 		if (mdValues == null || mdValues.length < 1 || mdValues[0] == null || mdValues[0].value == null) {
 			return;
 		}
 		ArrayNode namesNode = mapper.createArrayNode();
-		for (DCValue mdValue : mdValues) {
+		for (Metadatum mdValue : mdValues) {
 			if (mdValue == null || mdValue.value == null) {
 				continue;
 			}

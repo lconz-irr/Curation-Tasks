@@ -2,9 +2,9 @@ package nz.ac.lconz.irr.curate.task;
 
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.DCValue;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 import org.dspace.content.authority.ChoiceAuthorityManager;
 import org.dspace.content.authority.Choices;
 import org.dspace.content.authority.MetadataAuthorityManager;
@@ -87,10 +87,10 @@ public class RetroactivelyAssignAuthorityValue extends AbstractCurationTask {
 			qualifier = fieldComponents[2];
 		}
 
-		DCValue[] values = item.getMetadata(schema, element, qualifier, Item.ANY);
+		Metadatum[] values = item.getMetadata(schema, element, qualifier, Item.ANY);
 		item.clearMetadata(schema, element, qualifier, Item.ANY);
 
-		for (DCValue existingValue : values) {
+		for (Metadatum existingValue : values) {
 			if (existingValue.authority != null && existingValue.confidence > Choices.CF_REJECTED) {
 				// already has valid authority value -> restore previous value (effectively keep whatever was there)
 				log.info("Item id=" + item.getID() + " already has an authority for its value (" + existingValue.value + "), keeping it");

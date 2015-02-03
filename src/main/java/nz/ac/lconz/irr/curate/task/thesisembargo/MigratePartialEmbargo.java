@@ -173,7 +173,7 @@ public class MigratePartialEmbargo extends AbstractCurationTask {
 	}
 
 	private DCDate getEmbargoDate(Item item) {
-		DCValue[] embargoDateMD = item.getMetadata(dateSchema, dateElement, dateQualifier, Item.ANY);
+		Metadatum[] embargoDateMD = item.getMetadata(dateSchema, dateElement, dateQualifier, Item.ANY);
 		if (embargoDateMD == null || embargoDateMD.length < 1 || embargoDateMD[0].value == null || "".equals(embargoDateMD[0].value)) {
 			return null;
 		}
@@ -181,7 +181,7 @@ public class MigratePartialEmbargo extends AbstractCurationTask {
 	}
 
 	private boolean isPartialEmbargo(Item item) {
-		DCValue[] embargoTypeMD = item.getMetadata(typeSchema, typeElement, typeQualifier, Item.ANY);
+		Metadatum[] embargoTypeMD = item.getMetadata(typeSchema, typeElement, typeQualifier, Item.ANY);
 		if (embargoTypeMD == null || embargoTypeMD.length < 1 || embargoTypeMD[0].value == null) {
 			return true;
 		}

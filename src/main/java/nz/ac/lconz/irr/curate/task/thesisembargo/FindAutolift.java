@@ -1,6 +1,5 @@
 package nz.ac.lconz.irr.curate.task.thesisembargo;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeManager;
 import org.dspace.authorize.ResourcePolicy;

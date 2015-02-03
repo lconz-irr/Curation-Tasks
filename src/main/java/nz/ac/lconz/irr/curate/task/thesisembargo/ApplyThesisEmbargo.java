@@ -70,7 +70,7 @@ public class ApplyThesisEmbargo extends AbstractCurationTask {
 			return;
 		}
 
-		DCValue[] dateMetadata = item.getMetadata(dateSchema, dateElement, dateQualifier, Item.ANY);
+		Metadatum[] dateMetadata = item.getMetadata(dateSchema, dateElement, dateQualifier, Item.ANY);
 		if (dateMetadata == null || dateMetadata.length == 0) {
 			return; // item isn't embargoed
 		}

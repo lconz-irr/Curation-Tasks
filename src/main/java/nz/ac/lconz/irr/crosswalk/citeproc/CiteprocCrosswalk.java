@@ -4,9 +4,9 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.DCValue;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 import org.dspace.content.crosswalk.CrosswalkException;
 import org.dspace.content.crosswalk.StreamDisseminationCrosswalk;
 import org.dspace.core.ConfigurationManager;
@@ -102,12 +102,12 @@ public class CiteprocCrosswalk implements StreamDisseminationCrosswalk {
 			}
 			String[] mdFields = fieldValue.split(",");
 			for (String mdField : mdFields) {
-				DCValue[] mdValues = item.getMetadata(mdField);
+				Metadatum[] mdValues = item.getMetadataByMetadataString(mdField);
 				if (mdValues != null && mdValues.length > 0 && mdValues[0] != null) {
 					if (converter != null) {
 						converter.insertValue(rootNode, fieldKey, item, mdValues, mapper);
 					} else {
-						for (DCValue mdValue : mdValues) {
+						for (Metadatum mdValue : mdValues) {
 							String value = mdValue.value;
 							if (value != null && !"".equals(value)) {
 								rootNode.put(fieldKey, value);
