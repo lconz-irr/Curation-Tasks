@@ -11,10 +11,13 @@ import org.dspace.core.Context;
 import org.dspace.curate.AbstractCurationTask;
 import org.dspace.curate.Curator;
 import org.dspace.curate.Distributive;
+import org.dspace.curate.Mutative;
 import org.dspace.eperson.Group;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,6 +28,7 @@ import java.util.List;
  * @author Andrea Schweer schweer@waikato.ac.nz
  */
 @Distributive
+@Mutative
 public class RepairEmbargoPermissions extends AbstractCurationTask {
 	private static final Logger log = Logger.getLogger(RepairEmbargoPermissions.class);
 
@@ -112,32 +116,20 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 		    return;
 	    }
 
-		Context context = null;
+	    // the item is embargoed
+		Context context = Curator.curationContext();;
 		try {
-			context = new Context();
-			context.ignoreAuthorization();
-
-			// the item is embargoed
 			boolean permissionsOk = checkPermissions(context, item);
 
 			if (!permissionsOk) {
 				fixPermissions(context, item);
-				context.complete();
-				context = null;
 				numFixedEmbargoedItems++;
 			} else {
-				context.abort();
-				context = null;
 				numOkEmbargoedItems++;
 			}
-		} catch (SQLException e) {
-			throw new IOException(e);
 		} catch (AuthorizeException e) {
+			log.error("Caught authorize exception when working on item id=" + item.getID() + ": " + e.getMessage());
 			throw new IOException(e);
-		} finally {
-			if (context != null && context.isValid()) {
-				context.abort();
-			}
 		}
 	}
 
@@ -277,6 +269,8 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 	}
 
 	private void makeBundlesBitstreamsAuthorisedReadOnly(Context context, Item item, List<String> ignoreBundles) throws SQLException, AuthorizeException {
+		List<Integer> anonymousGroupID = Arrays.asList(0);
+
 		// remove read access from all bundles and their bitstreams
 		for (Bundle bundle : item.getBundles()) {
 			if (ignoreBundles.contains(bundle.getName())) {
@@ -284,6 +278,9 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 			}
 			// remove all non-custom access
 			AuthorizeManager.removeAllPoliciesByDSOAndTypeNotEqualsTo(context, bundle, ResourcePolicy.TYPE_CUSTOM);
+			// remove access for anonymous, even if it is custom
+			removeCustomPolicies(context, bundle, anonymousGroupID);
+
 
 			// add authorised group access back in
 			if (readGroupId >= 0 && !AuthorizeManager.isAnIdenticalPolicyAlreadyInPlace(context, bundle, readGroupId, Constants.READ, -1)) {
@@ -297,6 +294,8 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 			{
 				// remove all non-custom access
 				AuthorizeManager.removeAllPoliciesByDSOAndTypeNotEqualsTo(context, bitstream, ResourcePolicy.TYPE_CUSTOM);
+				// remove access for anonymous, even if it is custom
+				removeCustomPolicies(context, bitstream, anonymousGroupID);
 
 				// add authorised group access back in
 				if (readGroupId >= 0 && !AuthorizeManager.isAnIdenticalPolicyAlreadyInPlace(context, bitstream, readGroupId, Constants.READ, -1)) {
@@ -311,6 +310,8 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 
 	private void makeItemAuthorisedReadOnly(Context context, Item item) throws SQLException, AuthorizeException {
 		AuthorizeManager.removeAllPoliciesByDSOAndTypeNotEqualsTo(context, item, ResourcePolicy.TYPE_CUSTOM);
+		// remove access for anonymous, even if it is custom
+		removeCustomPolicies(context, item, Arrays.asList(0));
 
 		// but allow authorised groups to read item
 		if (readGroupId >= 0)
@@ -321,6 +322,21 @@ public class RepairEmbargoPermissions extends AbstractCurationTask {
 					policy.update();
 				}
 			}
+		}
+	}
+
+
+	private static void removeCustomPolicies(Context context, DSpaceObject dso, List<Integer> groupIds) throws SQLException, AuthorizeException {
+		List<ResourcePolicy> customPolicies = AuthorizeManager.findPoliciesByDSOAndType(context, dso, ResourcePolicy.TYPE_CUSTOM);
+		List<ResourcePolicy> keepPolicies = new ArrayList<ResourcePolicy>();
+		for (ResourcePolicy policy : customPolicies) {
+			if (policy.getAction() != Constants.READ || !groupIds.contains(policy.getGroupID())) {
+				keepPolicies.add(policy);
+			}
+		}
+		AuthorizeManager.removeAllPoliciesByDSOAndType(context, dso, ResourcePolicy.TYPE_CUSTOM);
+		if (!keepPolicies.isEmpty()) {
+			AuthorizeManager.addPolicies(context, keepPolicies, dso);
 		}
 	}
 }
