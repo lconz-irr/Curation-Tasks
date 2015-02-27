@@ -109,50 +109,39 @@ public class FindAutolift extends AbstractCurationTask {
 		if (!item.isArchived()) {
 			return; // do nothing
 		}
-		Context context = null;
-		try {
-			context = new Context();
-			context.turnOffAuthorisationSystem();
 
-			boolean hasAutolift = checkAutolift(context, item, item.getHandle());
-			hasAutolift |= checkBundlesBitstreamsAutolift(context, item);
+		boolean hasAutolift = checkAutolift(item, item.getHandle());
+		hasAutolift |= checkBundlesBitstreamsAutolift(item);
 
-			if (hasAutolift) {
-				numFound++;
-				StringBuilder message = new StringBuilder(HandleManager.resolveToURL(context, item.getHandle())).append("\n");
-				List<String> details = found.get(item.getHandle());
-				for (String detail : details) {
-					message.append(detail).append("\n");
-				}
-				report(message.toString());
-				messageText.append(message).append("\n");
+		if (hasAutolift) {
+			numFound++;
+			StringBuilder message = new StringBuilder(HandleManager.resolveToURL(Curator.curationContext(), item.getHandle())).append("\n");
+			List<String> details = found.get(item.getHandle());
+			for (String detail : details) {
+				message.append(detail).append("\n");
 			}
-			context.abort();
-			context = null;
-		} finally {
-			if (context != null && context.isValid()) {
-				context.abort();
-			}
+			report(message.toString());
+			messageText.append(message).append("\n");
 		}
 	}
 
-	private boolean checkBundlesBitstreamsAutolift(Context context, Item item) throws SQLException {
+	private boolean checkBundlesBitstreamsAutolift(Item item) throws SQLException {
 		boolean autoliftFound = false;
 		Bundle[] bundles = item.getBundles();
 		for (Bundle bundle : bundles) {
-			autoliftFound |= checkAutolift(context, bundle, item.getHandle());
+			autoliftFound |= checkAutolift(bundle, item.getHandle());
 			Bitstream[] bitstreams = bundle.getBitstreams();
 			for (Bitstream bitstream : bitstreams) {
-				autoliftFound |= checkAutolift(context, bitstream, item.getHandle());
+				autoliftFound |= checkAutolift(bitstream, item.getHandle());
 			}
 		}
 		return autoliftFound;
 	}
 
-	private boolean checkAutolift(Context context, DSpaceObject dso, String parentHandle) throws SQLException {
+	private boolean checkAutolift(DSpaceObject dso, String parentHandle) throws SQLException {
 		Date now = new Date();
 		boolean autoliftFound = false;
-		List<ResourcePolicy> policies = AuthorizeManager.getPolicies(context, dso);
+		List<ResourcePolicy> policies = AuthorizeManager.getPolicies(Curator.curationContext(), dso);
 		for (ResourcePolicy policy : policies) {
 			Date startDate = policy.getStartDate();
 			Date endDate = policy.getEndDate();
