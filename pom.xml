@@ -3,7 +3,7 @@
 
   <groupId>nz.ac.lconz.irr</groupId>
   <artifactId>lconz-curation-tasks</artifactId>
-  <version>5.0-SNAPSHOT</version>
+  <version>5.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>curation-tasks</name>
@@ -31,7 +31,7 @@
     <dependency>
       <groupId>org.dspace</groupId>
       <artifactId>dspace-api</artifactId>
-      <version>5.0</version>
+      <version>5.1</version>
       <scope>provided</scope>
     </dependency>
 
