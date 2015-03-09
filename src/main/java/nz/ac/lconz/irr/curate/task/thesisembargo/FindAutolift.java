@@ -52,7 +52,7 @@ public class FindAutolift extends AbstractCurationTask {
 	public int perform(DSpaceObject dso) throws IOException {
 		numFound = 0;
 		messageText = new StringBuilder();
-		found = new HashMap<String, List<String>>();
+		found = new HashMap<>();
 
 		distribute(dso);
 
@@ -74,13 +74,7 @@ public class FindAutolift extends AbstractCurationTask {
 				try {
 					email.send();
 					setResult(resultText + "; e-mail sent.");
-				} catch (MessagingException e) {
-					String error = "Cannot send e-mail: " + e.getMessage();
-					log.error(error, e);
-					report(error);
-					setResult(error);
-					hasError = true;
-				} catch (IOException e) {
+				} catch (MessagingException | IOException e) {
 					String error = "Cannot send e-mail: " + e.getMessage();
 					log.error(error, e);
 					report(error);
