@@ -57,7 +57,7 @@ public class CiteprocCrosswalk implements StreamDisseminationCrosswalk {
 		fields = new HashMap<String, String>();
 		fieldTypes = new HashMap<String, String>();
 		keyPattern = Pattern.compile("^field\\.([a-zA-Z\\-]+)$");
-		Pattern valuePattern = Pattern.compile("^([a-zA-Z\\.,]+)(?:\\((\\w+)\\))?$");
+		Pattern valuePattern = Pattern.compile("^([a-zA-Z\\.,\\-]+)(?:\\((\\w+)\\))?$");
 		for (Object key : properties.keySet()) {
 			Matcher keyMatcher = keyPattern.matcher(key.toString());
 			if (keyMatcher.matches()) {
