@@ -3,16 +3,16 @@ package nz.ac.lconz.irr.crosswalk.citeproc;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
-import org.dspace.content.DCValue;
 import org.dspace.content.Item;
+import org.dspace.content.Metadatum;
 
 /**
  * @author Andrea Schweer schweer@waikato.ac.nz for the LCoNZ Institutional Research Repositories
  */
 public class UoWTypesConverter implements Converter {
 	@Override
-	public void insertValue(ObjectNode rootNode, String field, Item item, DCValue[] mdValues, ObjectMapper mapper) {
-		for (DCValue mdValue : mdValues) {
+	public void insertValue(ObjectNode rootNode, String field, Item item, Metadatum[] mdValues, ObjectMapper mapper) {
+		for (Metadatum mdValue : mdValues) {
 			if (mdValue == null || mdValue.value == null) {
 				continue;
 			}
@@ -24,7 +24,7 @@ public class UoWTypesConverter implements Converter {
 
 				String genreSourceField = "thesis.degree.name";
 				StringBuilder genreBuilder = new StringBuilder(mdValue.value);
-				DCValue[] degreeNames = item.getMetadata(genreSourceField);
+				Metadatum[] degreeNames = item.getMetadataByMetadataString(genreSourceField);
 				if (degreeNames != null && degreeNames.length > 0 && degreeNames[0] != null) {
 					String degreeName = degreeNames[0].value;
 					if (degreeName != null && !"".equals(degreeName)) {
@@ -58,8 +58,8 @@ public class UoWTypesConverter implements Converter {
 	}
 
 	private boolean hasProceedingsInfo(Item item) {
-		DCValue[] partOfs = item.getMetadata("dc.relation.isPartOf");
-		for (DCValue partOf : partOfs) {
+		Metadatum[] partOfs = item.getMetadataByMetadataString("dc.relation.isPartOf");
+		for (Metadatum partOf : partOfs) {
 			if (StringUtils.isNotBlank(partOf.value)) {
 				return true;
 			}
@@ -67,9 +67,9 @@ public class UoWTypesConverter implements Converter {
 		return false; // haven't found anything
 	}
 
-	private void processReport(ObjectNode rootNode, String field, Item item, DCValue mdValue) {
+	private void processReport(ObjectNode rootNode, String field, Item item, Metadatum mdValue) {
 		rootNode.put(field, "report");
-		DCValue[] seriesValues = item.getMetadata("dc.relation.ispartofseries");
+		Metadatum[] seriesValues = item.getMetadataByMetadataString("dc.relation.ispartofseries");
 		if (seriesValues != null && seriesValues.length > 0 && seriesValues[0] != null) {
 			String series = seriesValues[0].value;
 			if (series != null && !"".equals(series)) {
@@ -81,7 +81,7 @@ public class UoWTypesConverter implements Converter {
 	}
 
 	private void addUrlFromUri(ObjectNode rootNode, Item item) {
-		DCValue[] uris = item.getMetadata("dc.identifier.uri");
+		Metadatum[] uris = item.getMetadataByMetadataString("dc.identifier.uri");
 		if (uris != null && uris.length > 0 && uris[0] != null) {
 			String uriString = uris[0].value;
 			if (uriString != null && !"".equals(uriString)) {
