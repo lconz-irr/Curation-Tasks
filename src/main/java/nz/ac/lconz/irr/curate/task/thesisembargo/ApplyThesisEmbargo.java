@@ -19,7 +19,7 @@ import java.sql.SQLException;
  */
 @Distributive
 public class ApplyThesisEmbargo extends AbstractCurationTask {
-	private static final Logger log = Logger.getLogger(ExpiringEmbargoesReminder.class);
+	private static final Logger log = Logger.getLogger(ApplyThesisEmbargo.class);
 
 	private String dateSchema;
 	private String dateElement;
@@ -80,10 +80,8 @@ public class ApplyThesisEmbargo extends AbstractCurationTask {
 		}
 
 
-		Context context = null;
 		try {
-			context = new Context();
-			context.turnOffAuthorisationSystem();
+			Context context = Curator.curationContext();
 
 			item.setDiscoverable(true);
 
@@ -111,15 +109,9 @@ public class ApplyThesisEmbargo extends AbstractCurationTask {
 				}
 			}
 			item.update();
-			context.complete();
-			context = null;
 			processedItems++;
 		} catch (AuthorizeException e) {
 			log.error("Problem applying thesis embargo", e);
-		} finally {
-			if (context != null && context.isValid()) {
-				context.abort();
-			}
 		}
 	}
 }
