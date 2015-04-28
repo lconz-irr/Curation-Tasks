@@ -24,8 +24,8 @@ import java.util.List;
  * non-public bundles and bitstreams in these bundles.
  *
  * By default, the only public bundles are ORIGINAL, LICENSE, CC-LICENSE, THUMBNAIL and TEXT.
- * An alternative set of public bundles can be specified via the lconz-curation config file,
- * property bundleprotect.public.bundles.
+ * An alternative set of public bundles can be specified via the task's config file,
+ * property public.bundles.
  *
  * @author Andrea Schweer schweer@waikato.ac.nz for LCoNZ IRR project
  */
@@ -40,7 +40,7 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 	@Override
 	public void init(Curator curator, String taskId) throws IOException {
 		super.init(curator, taskId);
-		String publicBundlesProperty = ConfigurationManager.getProperty("lconz-curation", "bundleprotect.public.bundles");
+		String publicBundlesProperty = taskProperty("public.bundles");
 		if (publicBundlesProperty != null && !publicBundlesProperty.trim().equals("")) {
 			String[] publicBundleNames = publicBundlesProperty.split("\\,\\s*");
 			publicBundles = Arrays.asList(publicBundleNames);
@@ -55,9 +55,8 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 	public int perform(DSpaceObject dso) throws IOException {
 		boolean changes;
 		if (dso.getType() == Constants.ITEM || dso.getType() == Constants.BUNDLE) {
-			Context context = null;
 			try {
-				context = Curator.curationContext();
+				Context context = Curator.curationContext();
 				changes = process(dso, context);
 				if (changes) {
 					context.commit();
