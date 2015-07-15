@@ -27,7 +27,7 @@ import java.util.List;
  * An alternative set of public bundles can be specified via the task's config file,
  * property public.bundles.
  *
- * @author Andrea Schweer schweer@waikato.ac.nz for LCoNZ IRR project
+ * @author Andrea Schweer schweer@waikato.ac.nz for UoW IRRs
  */
 @Mutative
 public class ProtectSensitiveBundles extends AbstractCurationTask {
@@ -46,10 +46,11 @@ public class ProtectSensitiveBundles extends AbstractCurationTask {
 			publicBundles = Arrays.asList(publicBundleNames);
 		}
 		if (publicBundles == null) {
-			publicBundles = Arrays.asList(new String[] {"ORIGINAL", "LICENSE", "CC-LICENSE", "THUMBNAIL", "TEXT"});
+			publicBundles = Arrays.asList("ORIGINAL", "LICENSE", "CC-LICENSE", "THUMBNAIL", "TEXT");
 		}
 		log.info("Public bundles are " + publicBundles);
 	}
+
 
 	@Override
 	public int perform(DSpaceObject dso) throws IOException {
