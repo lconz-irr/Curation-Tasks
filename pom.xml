@@ -3,7 +3,7 @@
 
   <groupId>nz.ac.lconz.irr</groupId>
   <artifactId>lconz-curation-tasks</artifactId>
-  <version>5.2-SNAPSHOT</version>
+  <version>5.1.1</version>
   <packaging>jar</packaging>
 
   <name>curation-tasks</name>
