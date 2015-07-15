@@ -70,10 +70,10 @@ public class UpdateStatsContainers extends AbstractCurationTask {
 	/**
 	 * Performs task upon a single DSpace Item. Used in conjunction with the
 	 * <code>distribute</code> method to run a single task across multiple Items.
-	 * <br/>
+	 *
 	 * You should override this method if you want to use
 	 * <code>distribute</code> to run your task across multiple DSpace Items.
-	 * <br/>
+	 *
 	 * Either this method or <code>performObject</code> should be overridden if
 	 * <code>distribute</code> method is used.
 	 *
