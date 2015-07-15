@@ -70,20 +70,20 @@ public class UpdateStatsContainers extends AbstractCurationTask {
 	/**
 	 * Performs task upon a single DSpace Item. Used in conjunction with the
 	 * <code>distribute</code> method to run a single task across multiple Items.
-	 * <p/>
+	 * <br/>
 	 * You should override this method if you want to use
 	 * <code>distribute</code> to run your task across multiple DSpace Items.
-	 * <p/>
+	 * <br/>
 	 * Either this method or <code>performObject</code> should be overridden if
 	 * <code>distribute</code> method is used.
 	 *
 	 * @param item the DSpace Item
-	 * @throws java.sql.SQLException
-	 * @throws java.io.IOException
+	 * @throws java.sql.SQLException if there is a problem performing the task
+	 * @throws java.io.IOException if there is a problem performing the task
 	 */
 	@Override
 	protected void performItem(Item item) throws SQLException, IOException {
-		List<String> fieldsToChange = Arrays.asList(new String[]{"owningColl", "owningComm"});
+		List<String> fieldsToChange = Arrays.asList("owningColl", "owningComm");
 		ArrayList<List<Object>> newValues = new ArrayList<List<Object>>();
 
 		ArrayList<Object> newCollections = new ArrayList<Object>();

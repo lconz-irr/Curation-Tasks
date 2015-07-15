@@ -60,7 +60,7 @@ public abstract class MediaFilter extends AbstractCurationTask
      * 
      * @param curator the Curator controlling this task
      * @param taskId identifier task should use in invoking services
-     * @throws java.io.IOException
+     * @throws java.io.IOException if there are problems reading the configuration
      */
     @Override
     public void init(Curator curator, String taskId) throws IOException {
@@ -95,7 +95,7 @@ public abstract class MediaFilter extends AbstractCurationTask
      * Perform the curation task upon passed DSO
      *
      * @param dso the DSpace object
-     * @throws java.io.IOException
+     * @throws java.io.IOException if there are problems performing the task
      */
     @Override
     public int perform(DSpaceObject dso) throws IOException {
