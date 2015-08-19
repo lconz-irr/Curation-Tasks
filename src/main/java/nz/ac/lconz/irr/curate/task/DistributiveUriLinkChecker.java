@@ -122,7 +122,7 @@ public class DistributiveUriLinkChecker extends AbstractCurationTask {
 	 * response code of 0 is returned.
 	 *
 	 * @param url The url to open
-	 * @return The HTTP response code (e.g. 200 / 301 / 404 / 500)
+	 * @return The HTTP response code (e.g. 200 / 301 / 404 / 500) or 0 if an exception was encountered
 	 */
 	protected int getResponseStatus(String url)
 	{
@@ -136,10 +136,11 @@ public class DistributiveUriLinkChecker extends AbstractCurationTask {
 
 			return code;
 
-		} catch (IOException ioe)
+		}
+		catch (IOException | RuntimeException e)
 		{
 			// Must be a bad URL
-			log.debug("Bad link: " + ioe.getMessage());
+			log.info("Encountered exception while trying to check url (" + url + "): " + e.getMessage());
 			return 0;
 		}
 	}
