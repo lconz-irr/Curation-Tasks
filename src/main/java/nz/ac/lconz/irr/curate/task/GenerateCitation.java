@@ -63,36 +63,14 @@ public class GenerateCitation extends AbstractCurationTask {
 		boolean overrideExisting = taskBooleanProperty("force", false);
 
 		if (hasCitation && !overrideExisting) {
-			String message = "Item already has citation, skipping; item_id=" + item.getID();
-			log.info(message);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_SKIP;
+			return processNonOkOutcome("Item already has citation, skipping; item_id=" + item.getID(), Curator.CURATE_SKIP, null);
 		}
 
-		Context context = null;
 		String itemJSON;
 		try {
-			context = Curator.curationContext();
-			itemJSON = itemToCiteprocJSON(context, item);
-		} catch (SQLException e) {
-			String message = taskId + "Problem generating citation";
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (CrosswalkException e) {
-			String message = taskId + "Problem generating citation";
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (AuthorizeException e) {
-			String message = taskId + "Problem generating citation";
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
+			itemJSON = itemToCiteprocJSON(Curator.curationContext(), item);
+		} catch (SQLException | CrosswalkException | AuthorizeException e) {
+			return processNonOkOutcome(taskId + "Problem generating citation", Curator.CURATE_ERROR, e);
 		}
 
 		if (itemJSON == null || "".equals(itemJSON)) {
@@ -109,19 +87,11 @@ public class GenerateCitation extends AbstractCurationTask {
 		try {
 			citation = makeCitation(itemJSON, citationStyle, citationLocale.replaceAll("_", "-"));
 		} catch (CitationGenerationException e) {
-			String message = taskId + "Problem generating citation";
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
+			return processNonOkOutcome(taskId + "Problem generating citation", Curator.CURATE_ERROR, e);
 		}
 
 		if (citation == null || "".equals(citation)) {
-			String message = taskId + ": empty citation for item id=" + item.getID();
-			log.info(message);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_FAIL;
+			return processNonOkOutcome(taskId + ": empty citation for item id=" + item.getID(), Curator.CURATE_FAIL, null);
 		}
 
 		item.clearMetadata(schema, element, qualifier, Item.ANY);
@@ -131,21 +101,22 @@ public class GenerateCitation extends AbstractCurationTask {
 			item.update();
 			setResult("Added citation " + citation);
 			report("Successfully added citation to item id=" + item.getID());
-		} catch (SQLException e) {
-			String message = taskId + "Problem adding citation to item";
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (AuthorizeException e) {
-			String message = taskId + "Problem adding citation to item";
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
+		} catch (SQLException | AuthorizeException e) {
+			return processNonOkOutcome(taskId + "Problem adding citation to item", Curator.CURATE_ERROR, e);
 		}
 
 		return Curator.CURATE_SUCCESS;
+	}
+
+	private int processNonOkOutcome(String message, int outcome, Throwable e) {
+		if (e != null) {
+			log.error(message, e);
+		} else {
+			log.warn(message);
+		}
+		report(message);
+		setResult(message);
+		return outcome;
 	}
 
 	private String itemToCiteprocJSON(Context context, Item item) throws CrosswalkException, AuthorizeException, IOException, SQLException {
@@ -180,9 +151,7 @@ public class GenerateCitation extends AbstractCurationTask {
 			}
 			Object resultObj = engine.eval("makeCitation();");
 			result = resultObj.toString();
-		} catch (ScriptException e) {
-			log.fatal("Cannot make citation", e);
-		} catch (FileNotFoundException e) {
+		} catch (ScriptException | FileNotFoundException e) {
 			log.fatal("Cannot make citation", e);
 		}
 		return result;

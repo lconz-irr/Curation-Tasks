@@ -53,7 +53,7 @@ public class UpdateStatsContainers extends AbstractCurationTask {
 	}
 
 	private void formatResults() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		buffer.append(numProcessedItems);
 		buffer.append(" items processed. \n");
 		if (numErrorItems > 0) {

@@ -58,14 +58,8 @@ public class RetroactivelyAssignAuthorityValue extends AbstractCurationTask {
 			report(message);
 			setResult(message);
 			return Curator.CURATE_SUCCESS;
-		} catch (SQLException e) {
+		} catch (SQLException | AuthorizeException e) {
 			String message = "Problem processing item id=" + item.getID() + ": " + e.getMessage();
-			log.warn(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (AuthorizeException e) {
-			String message = "Not authorised to process item id=" + item.getID() + ": " + e.getMessage();
 			log.warn(message, e);
 			report(message);
 			setResult(message);

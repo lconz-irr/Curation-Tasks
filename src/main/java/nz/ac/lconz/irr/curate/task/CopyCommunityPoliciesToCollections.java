@@ -34,25 +34,16 @@ public class CopyCommunityPoliciesToCollections extends AbstractCurationTask {
 			return Curator.CURATE_SKIP;
 		}
 		Community community = (Community) dso;
-		Context context = null;
 		try {
-			context = Curator.curationContext();
 
-			workOnCommunity(context, community);
-
-			context.commit();
+			workOnCommunity(Curator.curationContext(), community);
 
 			String message = String.format("Child communities/collections inherited the policies of the community \"%s\"", community.getName());
 			report(message);
 			setResult(message);
 
 			return Curator.CURATE_SUCCESS;
-		} catch (SQLException e) {
-			String message = e.getMessage();
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (AuthorizeException e) {
+		} catch (SQLException | AuthorizeException e) {
 			String message = e.getMessage();
 			report(message);
 			setResult(message);

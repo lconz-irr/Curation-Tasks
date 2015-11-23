@@ -1,8 +1,10 @@
 package nz.ac.lconz.irr.curate.task;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.AuthorizeManager;
+import org.dspace.authorize.ResourcePolicy;
 import org.dspace.content.*;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Constants;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,7 +42,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 		if (mdField == null) {
 			mdField = "dc.format.mimetype";
 		}
-		log.info("Using mimetype field " + mdField);
+		log.debug("Using mimetype field " + mdField);
 
 		String[] mdComponents = mdField.split("\\.");
 		schema = mdComponents[0];
@@ -87,18 +90,11 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 
 			if (changes) {
 				item.update();
-				context.commit();
 				return Curator.CURATE_SUCCESS;
 			} else {
 				return Curator.CURATE_SKIP;
 			}
-		} catch (SQLException e) {
-			String message = "Problem annotating item id=" + item.getID() + " with mime types: " + e.getMessage();
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (AuthorizeException e) {
+		} catch (SQLException | AuthorizeException e) {
 			String message = "Problem annotating item id=" + item.getID() + " with mime types: " + e.getMessage();
 			log.error(message, e);
 			report(message);
@@ -108,15 +104,14 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 	}
 
 	private List<String> getBitstreamFormats(Context c, Item item) throws SQLException, AuthorizeException, IOException {
-		// get 'original' bundles
-		Bundle[] bundles = item.getBundles("ORIGINAL");
-		List<String> mimetypes = new ArrayList<String>();
+		// return empty list if item isn't public
+		if (!anonymousCanRead(c, item)) {
+			return Collections.emptyList();
+		}
 
-        //check for embargo and return empty list if item has an embargo
-        DCDate embargoDate = EmbargoManager.getEmbargoTermsAsDate(c, item);
-        if(embargoDate != null){
-            return mimetypes;
-        }
+		// get 'original' bundles
+		Bundle[] bundles = item.getBundles(Constants.CONTENT_BUNDLE_NAME);
+		List<String> mimetypes = new ArrayList<>();
 
 		for (Bundle bundle : bundles)
 		{
@@ -138,7 +133,7 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 				}
 
 				String mimetype = bitstream.getFormat().getMIMEType();
-				if (mimetype != null && ! "".equals(mimetype))
+				if (StringUtils.isNotBlank(mimetype))
 				{
 					if (bitstream.getID() == primaryId)
 					{
@@ -161,21 +156,14 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 		Metadatum[] existingMetadata = item.getMetadata(schema, element, qualifier, Item.ANY);
 		if (existingMetadata != null && existingMetadata.length > 0)
 		{
-				item.clearMetadata(schema, element, qualifier, Item.ANY);
-				changes = true;
+			item.clearMetadata(schema, element, qualifier, Item.ANY);
+			changes = true;
 		}
 		return changes;
 	}
 
 	private boolean anonymousCanRead(Context c, DSpaceObject dso) throws SQLException {
-		Group[] readGroups = AuthorizeManager.getAuthorizedGroups(c, dso, Constants.READ);
-		for (Group group : readGroups)
-		{
-			if (group.getID() == 0)
-			{
-				return true;
-			}
-		}
-		return false;
+		ResourcePolicy anonymousReadPolicy = AuthorizeManager.findByTypeIdGroupAction(c, dso.getType(), dso.getID(), Group.ANONYMOUS_ID, Constants.READ, -1);
+		return anonymousReadPolicy != null && anonymousReadPolicy.isDateValid();
 	}
 }

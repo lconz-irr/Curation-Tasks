@@ -70,14 +70,8 @@ public class MakeThesisPrimaryBitstream extends AbstractCurationTask {
 
 				makePrimaryBitstreamFirst(thesisBundle);
 				thesisBundle.update();
-			} catch (SQLException e) {
+			} catch (SQLException | AuthorizeException e) {
 				String message = "Problem setting primary bitstream id=" + thesisBitstream.getID() + " for item id=" + item.getID();
-				log.warn(message, e);
-				report(message);
-				setResult(e.getMessage());
-				return Curator.CURATE_ERROR;
-			} catch (AuthorizeException e) {
-				String message = "Not authorised to set primary bitstream id=" + thesisBitstream.getID() + " for item id=" + item.getID();
 				log.warn(message, e);
 				report(message);
 				setResult(e.getMessage());

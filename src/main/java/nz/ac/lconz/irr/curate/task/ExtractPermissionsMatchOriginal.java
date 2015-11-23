@@ -16,7 +16,6 @@ import org.dspace.curate.Mutative;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -44,7 +43,7 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 			return Curator.CURATE_FAIL;
 		}
 
-		Context context = null;
+		Context context;
 
 		boolean changes = false;
 		try {
@@ -52,16 +51,7 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 
 			if (dso.getType() == Constants.SITE) {
 				ItemIterator items = Item.findAll(context);
-				while (items.hasNext()) {
-					Item item = items.next();
-					try {
-						changes |= workOnItem(item, context);
-					} catch (RuntimeException e) {
-						String message = "Problem while performing task on item id=" + item.getID() + ", " + item.getType() + "; " + e.getMessage();
-						log.error(message, e);
-						report(message);
-					}
-				}
+				changes = processItems(context, items);
 			} else if (dso.getType() == Constants.COMMUNITY) {
 				Community community = (Community) dso;
 				Collection[] collections = community.getCollections();
@@ -87,13 +77,7 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 			if (changes) {
 				context.commit();
 			}
-		} catch (SQLException e) {
-			String message = "Problem while performing task on object id=" + dso.getID() + ", " + dso.getType() + "; " + e.getMessage();
-			log.error(message, e);
-			report(message);
-			setResult(message);
-			return Curator.CURATE_ERROR;
-		} catch (AuthorizeException e) {
+		} catch (SQLException | AuthorizeException e) {
 			String message = "Problem while performing task on object id=" + dso.getID() + ", " + dso.getType() + "; " + e.getMessage();
 			log.error(message, e);
 			report(message);
@@ -114,20 +98,24 @@ public class ExtractPermissionsMatchOriginal extends AbstractCurationTask {
 		}
 	}
 
-	private boolean workOnCollection(Collection collection, Context context) throws SQLException, AuthorizeException, IOException {
-		boolean changes  = false;
-		ItemIterator items = collection.getItems();
+	private boolean processItems(Context context, ItemIterator items) throws SQLException, AuthorizeException, IOException {
+		boolean changes = false;
 		while (items.hasNext()) {
-			Item item = items.next();
-			try {
-				changes |= workOnItem(item, context);
-			} catch (RuntimeException e) {
-				String message = "Problem while performing task on item id=" + item.getID() + ", " + item.getType() + "; " + e.getMessage();
-				log.error(message, e);
-				report(message);
-			}
-		}
+            Item item = items.next();
+            try {
+                changes |= workOnItem(item, context);
+            } catch (RuntimeException e) {
+                String message = "Problem while performing task on item id=" + item.getID() + ", " + item.getType() + "; " + e.getMessage();
+                log.error(message, e);
+                report(message);
+            }
+        }
 		return changes;
+	}
+
+	private boolean workOnCollection(Collection collection, Context context) throws SQLException, AuthorizeException, IOException {
+		ItemIterator items = collection.getItems();
+		return processItems(context, items);
 	}
 
 	private boolean workOnItem(Item item, Context context) throws SQLException, AuthorizeException, IOException {
