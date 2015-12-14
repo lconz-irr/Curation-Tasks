@@ -66,34 +66,46 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 		try {
 			context = Curator.curationContext();
 
-			boolean changes;
+			List<String> mimetypesFromMetadata = new ArrayList<>();
+			Metadatum[] metadata = item.getMetadata(schema, element, qualifier, Item.ANY);
+			if (metadata != null) {
+				for (Metadatum mdEntry : metadata) {
+					mimetypesFromMetadata.add(mdEntry != null ? mdEntry.value : null);
+				}
+			}
 
-			changes = clearExisting(item);
 			List<String> mimetypes = getBitstreamFormats(context, item);
 
 			String message;
+			if (mimetypesFromMetadata.equals(mimetypes)) {
+				message = "Item " + item.getName() + ": mime types unchanged";
+
+				report(message);
+				setResult(message);
+				log.info(message);
+
+				return Curator.CURATE_SKIP;
+			}
+
+			item.clearMetadata(schema, element, qualifier, Item.ANY);
+
 			if (!mimetypes.isEmpty())
 			{
 				String[] mimeArray = mimetypes.toArray(new String[mimetypes.size()]);
 				item.addMetadata(schema, element, qualifier, null, mimeArray);
-				changes = true;
 
-				setResult(Arrays.deepToString(mimeArray));
 				message = "Item " + item.getName() + ": mime types " + Arrays.deepToString(mimeArray);
 			} else {
 				message = "Item " + item.getName() + ": no mime types of public bitstreams found";
 			}
 
+			item.update();
+
 			report(message);
 			setResult(message);
 			log.info(message);
 
-			if (changes) {
-				item.update();
-				return Curator.CURATE_SUCCESS;
-			} else {
-				return Curator.CURATE_SKIP;
-			}
+			return Curator.CURATE_SUCCESS;
 		} catch (SQLException | AuthorizeException e) {
 			String message = "Problem annotating item id=" + item.getID() + " with mime types: " + e.getMessage();
 			log.error(message, e);
@@ -149,17 +161,6 @@ public class AnnotateWithBitstreamFormats extends AbstractCurationTask {
 			}
 		}
 		return mimetypes;
-	}
-
-	private boolean clearExisting(Item item) {
-		boolean changes = false;
-		Metadatum[] existingMetadata = item.getMetadata(schema, element, qualifier, Item.ANY);
-		if (existingMetadata != null && existingMetadata.length > 0)
-		{
-			item.clearMetadata(schema, element, qualifier, Item.ANY);
-			changes = true;
-		}
-		return changes;
 	}
 
 	private boolean anonymousCanRead(Context c, DSpaceObject dso) throws SQLException {
